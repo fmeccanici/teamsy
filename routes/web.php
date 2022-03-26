@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    Route::view('/team', 'team')->name('team.index');
+    Route::view('/team/add-user', 'users.create')->name('users.create');
+
     Route::get('email/verify/{id}/{hash}', EmailVerificationController::class)
         ->middleware('signed')
         ->name('verification.verify');
