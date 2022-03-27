@@ -8,6 +8,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -19,10 +21,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $guarded = [
+
     ];
 
     /**
@@ -44,4 +44,40 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function isAdmin()
+    {
+        return Str::lower($this->role) === 'admin';
+    }
+
+    public function isHR()
+    {
+        return Str::lower($this->role) === "human resources";
+    }
+
+    public function avatarUrl()
+    {
+        if($this->photo) {
+            return Storage::disk('s3-public')->url($this->photo);
+        }
+        return '';
+    }
+
+    public function applicationUrl()
+    {
+        if($this->application()) {
+            return url('/documents/' . $this->id . '/' . $this->application()->filename);
+        }
+        return '#';
+    }
+
+    public function application()
+    {
+        return $this->documents()->where('type', 'application')->first();
+    }
+
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
 }
